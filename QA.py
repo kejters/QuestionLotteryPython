@@ -1,20 +1,7 @@
-"""
-Below program was developed as a support to learing process. 
-Program generates a set of test questions based on question and answers base located in excel file name "TEST.xlsx". 
-Excel file contains 3 columns named: "question" - contains the content of the question, "posibilities" - contains options of answers (A, B, C, D) 
-and "answer" - which contains the proper answer to the question.
-Program display questions and check answers.
-
-
-User specifies how many question he wants to answer. 
-Then question is displayed, user put his answer to terminal and get notification if he is right or not. 
-Correct answers are counted and displayed after the test. 
-"""
-
 import pandas as pd
 import random
 
-#CLASS FOR TEXT FORMATTING
+
 class bcolors:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
@@ -27,38 +14,81 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 
-#IMPORT EXCEL FILE WITH TEST'S QUESTIONS AND ANSWERS
-test = pd.read_excel("TEST.xlsx")
+def choose_category(file):
 
-test_length = int(input("How many questions do you want to answer?\nPick number or '0' for all\n"))
+    list_of_categories = sorted(list(set(file['cat'])))
+    print("You have below categories to chose:")
+    cat_number = 0
+    for category in list_of_categories:
+        cat_number += 1
+        print(f'{cat_number} - {category}')
+    print(f'{cat_number + 1} - All')
 
-#DEFINE TEST LENGTH AND PICK RANDOMLY NUMBERS AND QUESTION ORDER
-if test_length > len(test):
-    print(f"Out of range! Test contains only {len(test)} questions")
+    chosen_category = int(input('Which one do you want to choose? '))
 
-elif test_length == 0:
-    question_numbers = random.sample(range(0,len(test)), len(test))
-
-else:
-    question_numbers = random.sample(range(0,len(test)), test_length)
-
-print(question_numbers)
-
-#TEST STARTS
-
-
-points = 0
-for question_number in question_numbers:
-    question = test['question'][question_number]
-    print(question)
-    print(test['posibilities'][question_number]+'\n')
-
-    user_answer = str(input()).upper()
-
-    if user_answer == test['answer'][question_number]:
-        print(f"{bcolors.OKCYAN}{bcolors.BOLD}GOOD!\n{bcolors.ENDC}")
-        points += 1
+    if chosen_category == len(list_of_categories) + 1:
+        filter_file = file
     else:
-        print(f"{bcolors.FAIL}{bcolors.BOLD}WRONG!\n{bcolors.ENDC}")
+        filter_file = file[(file['cat'] == list_of_categories[chosen_category - 1])]
 
-print(f"End of the test! You answer correct for {points} of {len(question_numbers)} questions!")
+    return filter_file
+
+
+def choose_test_length(filtered_category):
+    test_length = int(input(f"There is {len(filtered_category)} questions in this category. How many questions do you want to answer?\nPick number or '0' for all\n"))
+
+    if test_length > len(filtered_category):
+        return print(f"Out of range! Test contains only {len(filtered_category)} questions")
+
+    elif test_length == 0:
+        return random.sample(list(filtered_category['No']), len(filtered_category))
+
+    else:
+        return random.sample(list(filtered_category['No']), test_length)
+
+
+def test_closed_questions(file_name):
+
+    test = pd.read_excel(file_name)
+    filter_questions = choose_category(test)
+    questions = choose_test_length(filter_questions)
+
+    points = 0
+    for question_number in questions:
+        question = test['question'][question_number]
+        print(question)
+        print(test['posibilities'][question_number] + '\n')
+
+        user_answer = str(input()).upper()
+
+        if user_answer == test['answer'][question_number]:
+            print(f"{bcolors.OKCYAN}{bcolors.BOLD}GOOD!\n{bcolors.ENDC}")
+            points += 1
+        else:
+            print(f"{bcolors.FAIL}{bcolors.BOLD}WRONG!\n{bcolors.ENDC}")
+
+    print(f"End of the test! You answer correct for {points} of {len(questions)} questions!")
+
+
+def test_open_questions(file_name):
+
+    test = pd.read_excel(file_name)
+    filter_questions = choose_category(test)
+    questions = choose_test_length(filter_questions)
+
+    for question_number in questions:
+        question = test['question'][question_number]
+        print(f"{bcolors.BOLD}{question}\n{bcolors.ENDC}")
+        user_answer = str(input("To show answer type ENTER. For exit type Q\n").upper())
+        if user_answer == "Q":
+            break
+        print(f"{test['answer'][question_number]}\n")
+        input("Press ENTER to continue. For exit type Q\n")
+
+
+test_type = int(input("Choose test type to start: \n 1. Closed questions test \n 2. Flashcards \n"))
+
+if test_type == 1:
+    test_closed_questions("TEST.xlsx")
+elif test_type == 2:
+    test_open_questions("OPEN.xlsx")
