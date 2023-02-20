@@ -14,8 +14,7 @@ Program display questions and check answers.
 
 **FLASHCARDS MODE:**
 Program generates a set of questions based on question base located in excel file name **"OPEN.xlsx".** 
-Excel file should contain 2 columns named: "**question**" - contains the content of the question, "**answer**" - contains proper answer
-and "**answer**" - which contains the proper answer to the question.
+Excel file should contain 2 columns named: "**question**" - contains the content of the question and "**answer**" - contains proper answer.
 
 200230220 - ver 1.1
   Open question mode added.
